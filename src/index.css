@@ -2,39 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Ocean-themed Design System - All colors, gradients, fonts, animations defined here. 
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Ocean-inspired color palette */
+    --background: 210 50% 98%;
+    --foreground: 215 25% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 210 40% 97%;
+    --card-foreground: 215 25% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 210 40% 97%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Deep ocean primary */
+    --primary: 210 85% 35%;
+    --primary-foreground: 210 50% 98%;
+    --primary-glow: 210 100% 50%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Seafoam secondary */
+    --secondary: 180 35% 85%;
+    --secondary-foreground: 215 25% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted ocean tones */
+    --muted: 210 25% 90%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Coral accent */
+    --accent: 15 85% 65%;
+    --accent-foreground: 210 50% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 20% 85%;
+    --input: 210 20% 92%;
+    --ring: 210 85% 35%;
+
+    /* Ocean gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(210, 85%, 45%) 0%, hsl(190, 75%, 55%) 50%, hsl(180, 70%, 65%) 100%);
+    --gradient-depth: linear-gradient(180deg, hsl(210, 40%, 97%) 0%, hsl(210, 45%, 92%) 100%);
+    --gradient-wave: linear-gradient(90deg, hsl(210, 85%, 35%) 0%, hsl(190, 75%, 45%) 50%, hsl(210, 85%, 35%) 100%);
+    
+    /* Ocean shadows */
+    --shadow-ocean: 0 10px 30px -10px hsl(210, 85%, 35% / 0.3);
+    --shadow-wave: 0 5px 20px -5px hsl(190, 75%, 55% / 0.2);
+    --shadow-depth: 0 20px 40px -10px hsl(210, 50%, 20% / 0.15);
+
+    /* Animations */
+    --transition-wave: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-float: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
@@ -56,33 +76,44 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Deep ocean dark theme */
+    --background: 215 40% 8%;
+    --foreground: 210 50% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 35% 12%;
+    --card-foreground: 210 50% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 35% 12%;
+    --popover-foreground: 210 50% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 190 85% 55%;
+    --primary-foreground: 215 40% 8%;
+    --primary-glow: 190 100% 70%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 25% 20%;
+    --secondary-foreground: 210 50% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 215 15% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 15 85% 65%;
+    --accent-foreground: 215 40% 8%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 210 50% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215 25% 22%;
+    --input: 215 25% 18%;
+    --ring: 190 85% 55%;
+
+    /* Dark ocean gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(215, 40%, 10%) 0%, hsl(210, 50%, 15%) 50%, hsl(190, 60%, 20%) 100%);
+    --gradient-depth: linear-gradient(180deg, hsl(215, 35%, 12%) 0%, hsl(215, 30%, 8%) 100%);
+    --gradient-wave: linear-gradient(90deg, hsl(190, 85%, 45%) 0%, hsl(180, 75%, 55%) 50%, hsl(190, 85%, 45%) 100%);
+    
+    --shadow-ocean: 0 10px 30px -10px hsl(190, 85%, 25% / 0.4);
+    --shadow-wave: 0 5px 20px -5px hsl(190, 75%, 35% / 0.3);
+    --shadow-depth: 0 20px 40px -10px hsl(215, 50%, 5% / 0.6);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -101,5 +132,124 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-depth);
+    min-height: 100vh;
+  }
+}
+
+/* Ocean-themed component styles */
+@layer components {
+  .ocean-card {
+    @apply bg-card border border-border rounded-xl shadow-lg;
+    background: var(--gradient-depth);
+    box-shadow: var(--shadow-wave);
+    transition: var(--transition-float);
+  }
+
+  .ocean-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-ocean);
+  }
+
+  .wave-animation {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wave-animation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: var(--gradient-wave);
+    animation: wave-slide 3s ease-in-out infinite;
+  }
+
+  .drag-area {
+    @apply border-2 border-dashed border-primary/30 rounded-xl p-8 text-center;
+    background: linear-gradient(135deg, hsl(210, 50%, 98%) 0%, hsl(210, 45%, 96%) 100%);
+    transition: var(--transition-wave);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .drag-area.drag-over {
+    @apply border-primary border-solid bg-primary/5;
+    transform: scale(1.02);
+    box-shadow: var(--shadow-ocean);
+  }
+
+  .floating-element {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .chat-bubble {
+    @apply rounded-2xl px-4 py-3 max-w-md;
+    transition: var(--transition-float);
+  }
+
+  .chat-bubble.user {
+    @apply bg-primary text-primary-foreground ml-auto;
+    background: var(--gradient-ocean);
+    box-shadow: var(--shadow-wave);
+  }
+
+  .chat-bubble.ai {
+    @apply bg-card text-card-foreground mr-auto;
+    background: var(--gradient-depth);
+    border: 1px solid hsl(var(--border));
+  }
+}
+
+@layer utilities {
+  .text-ocean-gradient {
+    background: var(--gradient-ocean);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-ocean {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground;
+    background: var(--gradient-ocean);
+    box-shadow: var(--shadow-wave);
+    transition: var(--transition-float);
+  }
+
+  .btn-ocean:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-ocean);
+  }
+}
+
+/* Keyframe animations */
+@keyframes wave-slide {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
   }
 }
