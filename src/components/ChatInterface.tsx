@@ -65,7 +65,7 @@ Please answer questions based on this content. Be concise but helpful, and if th
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
