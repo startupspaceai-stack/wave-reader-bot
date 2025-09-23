@@ -132,6 +132,15 @@ Please answer questions based on this content. Be concise but helpful, and if th
     localStorage.setItem('openai_api_key', value);
   };
 
+  const resetApiKey = () => {
+    setApiKey('');
+    localStorage.removeItem('openai_api_key');
+    toast({
+      title: "API Key Reset",
+      description: "You can now enter a new API key.",
+    });
+  };
+
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       {/* API Key Input */}
@@ -203,6 +212,18 @@ Please answer questions based on this content. Be concise but helpful, and if th
 
       {/* Input Form */}
       <div className="border-t border-border p-4">
+        {apiKey && (
+          <div className="flex justify-end mb-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={resetApiKey}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Change API Key
+            </Button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
             value={inputValue}
