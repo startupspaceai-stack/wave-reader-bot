@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Waves } from 'lucide-react';
+import { Send, Bot, User, Waves, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -17,6 +18,8 @@ interface ChatInterfaceProps {
   fileName: string;
 }
 
+type AIProvider = 'openai' | 'gemini';
+
 export const ChatInterface = ({ pdfText, fileName }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -28,7 +31,8 @@ export const ChatInterface = ({ pdfText, fileName }: ChatInterfaceProps) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('openai_api_key') || '');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('ai_api_key') || '');
+  const [aiProvider, setAiProvider] = useState<AIProvider>((localStorage.getItem('ai_provider') as AIProvider) || 'gemini');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -72,11 +76,61 @@ Please answer questions based on this content. Be concise but helpful, and if th
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`OpenAI API error (${response.status}): ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
     return data.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+  };
+
+  const callGemini = async (question: string): Promise<string> => {
+    if (!apiKey) {
+      throw new Error('Gemini API key is required');
+    }
+
+    const systemPrompt = `You are a helpful AI assistant that answers questions about PDF documents. 
+    
+The user has uploaded a PDF document with the following content:
+${pdfText.substring(0, 8000)}...
+
+Please answer questions based on this content. Be concise but helpful, and if the answer isn't in the document, let the user know.
+
+User question: ${question}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: systemPrompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500,
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API error (${response.status}): ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
+  };
+
+  const callAI = async (question: string): Promise<string> => {
+    if (aiProvider === 'openai') {
+      return callOpenAI(question);
+    } else {
+      return callGemini(question);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +159,7 @@ Please answer questions based on this content. Be concise but helpful, and if th
     setIsLoading(true);
 
     try {
-      const aiResponse = await callOpenAI(inputValue);
+      const aiResponse = await callAI(inputValue);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -116,10 +170,11 @@ Please answer questions based on this content. Be concise but helpful, and if th
       
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Error calling OpenAI:', error);
+      console.error(`Error calling ${aiProvider.toUpperCase()}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
-        title: "Error",
-        description: "Failed to get AI response. Please check your API key and try again.",
+        title: "AI Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -129,12 +184,20 @@ Please answer questions based on this content. Be concise but helpful, and if th
 
   const handleApiKeyChange = (value: string) => {
     setApiKey(value);
-    localStorage.setItem('openai_api_key', value);
+    localStorage.setItem('ai_api_key', value);
+  };
+
+  const handleProviderChange = (provider: AIProvider) => {
+    setAiProvider(provider);
+    localStorage.setItem('ai_provider', provider);
+    // Reset API key when switching providers since they use different keys
+    setApiKey('');
+    localStorage.removeItem('ai_api_key');
   };
 
   const resetApiKey = () => {
     setApiKey('');
-    localStorage.removeItem('openai_api_key');
+    localStorage.removeItem('ai_api_key');
     toast({
       title: "API Key Reset",
       description: "You can now enter a new API key.",
@@ -143,26 +206,75 @@ Please answer questions based on this content. Be concise but helpful, and if th
 
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
+      {/* API Provider Selection */}
+      <div className="ocean-card p-4 mb-4">
+        <div className="flex items-center space-x-3 mb-3">
+          <Settings className="w-5 h-5 text-primary" />
+          <h3 className="font-semibold">AI Provider</h3>
+        </div>
+        <Select value={aiProvider} onValueChange={handleProviderChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="gemini">Google Gemini (Free)</SelectItem>
+            <SelectItem value="openai">OpenAI GPT-3.5</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground mt-2">
+          Gemini offers free API access with generous limits
+        </p>
+      </div>
+
       {/* API Key Input */}
       {!apiKey && (
         <div className="ocean-card p-4 mb-4">
           <div className="flex items-center space-x-3 mb-2">
             <Waves className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold">Setup Required</h3>
+            <h3 className="font-semibold">API Key Required</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-3">
-            Enter your OpenAI API key to start chatting with your PDF:
+            {aiProvider === 'openai' 
+              ? 'Enter your OpenAI API key:' 
+              : 'Enter your Google AI Studio API key:'
+            }
           </p>
           <Input
             type="password"
-            placeholder="sk-..."
+            placeholder={aiProvider === 'openai' ? 'sk-...' : 'AIza...'}
             value={apiKey}
             onChange={(e) => handleApiKeyChange(e.target.value)}
             className="w-full"
           />
-          <p className="text-xs text-muted-foreground mt-2">
-            Your API key is stored locally and never sent to our servers.
-          </p>
+          <div className="text-xs text-muted-foreground mt-2 space-y-1">
+            <p>Your API key is stored locally and never sent to our servers.</p>
+            {aiProvider === 'gemini' && (
+              <p>
+                Get your free Gemini API key at{' '}
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google AI Studio
+                </a>
+              </p>
+            )}
+            {aiProvider === 'openai' && (
+              <p>
+                Get your OpenAI API key at{' '}
+                <a 
+                  href="https://platform.openai.com/api-keys" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  OpenAI Platform
+                </a>
+              </p>
+            )}
+          </div>
         </div>
       )}
 
