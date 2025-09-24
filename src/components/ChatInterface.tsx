@@ -5,12 +5,21 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ChartRenderer } from './ChartRenderer';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  chartData?: {
+    type: 'bar' | 'line' | 'pie';
+    title?: string;
+    data: any[];
+    xKey?: string;
+    yKey?: string;
+    dataKey?: string;
+  };
 }
 
 interface ChatInterfaceProps {
@@ -56,7 +65,21 @@ export const ChatInterface = ({ pdfText, fileName }: ChatInterfaceProps) => {
 The user has uploaded a PDF document with the following content:
 ${pdfText.substring(0, 12000)}...
 
-Please analyze this content carefully and answer questions based on it. Provide detailed, accurate responses with specific references to the document content when possible. If the answer isn't clearly stated in the document, let the user know and provide your best interpretation based on the available information.`;
+Please analyze this content carefully and answer questions based on it. Provide detailed, accurate responses with specific references to the document content when possible. If the answer isn't clearly stated in the document, let the user know and provide your best interpretation based on the available information.
+
+CHART GENERATION: When the user asks for charts, graphs, or data visualization, you can generate charts by including a JSON block in your response with the following format:
+\`\`\`chart
+{
+  "type": "bar|line|pie",
+  "title": "Chart Title",
+  "data": [{"name": "Item1", "value": 100}, {"name": "Item2", "value": 200}],
+  "xKey": "name",
+  "yKey": "value",
+  "dataKey": "value"
+}
+\`\`\`
+
+For pie charts, use "dataKey" instead of "yKey". Always extract real data from the PDF content when creating charts.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -95,6 +118,20 @@ The user has uploaded a PDF document with the following content:
 ${pdfText.substring(0, 12000)}...
 
 Please analyze this content carefully and answer questions based on it. Provide detailed, accurate responses with specific references to the document content when possible. If the answer isn't clearly stated in the document, let the user know and provide your best interpretation based on the available information.
+
+CHART GENERATION: When the user asks for charts, graphs, or data visualization, you can generate charts by including a JSON block in your response with the following format:
+\`\`\`chart
+{
+  "type": "bar|line|pie",
+  "title": "Chart Title", 
+  "data": [{"name": "Item1", "value": 100}, {"name": "Item2", "value": 200}],
+  "xKey": "name",
+  "yKey": "value",
+  "dataKey": "value"
+}
+\`\`\`
+
+For pie charts, use "dataKey" instead of "yKey". Always extract real data from the PDF content when creating charts.
 
 User question: ${question}`;
 
@@ -161,11 +198,27 @@ User question: ${question}`;
     try {
       const aiResponse = await callAI(inputValue);
       
+      // Extract chart data if present
+      const chartRegex = /```chart\n([\s\S]*?)\n```/;
+      const chartMatch = aiResponse.match(chartRegex);
+      let chartData = null;
+      let cleanedText = aiResponse;
+      
+      if (chartMatch) {
+        try {
+          chartData = JSON.parse(chartMatch[1]);
+          cleanedText = aiResponse.replace(chartRegex, '').trim();
+        } catch (e) {
+          console.error('Failed to parse chart data:', e);
+        }
+      }
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponse,
+        text: cleanedText,
         sender: 'ai',
         timestamp: new Date(),
+        chartData,
       };
       
       setMessages(prev => [...prev, aiMessage]);
@@ -298,6 +351,7 @@ User question: ${question}`;
               
               <div className={`chat-bubble ${message.sender}`}>
                 <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                {message.chartData && <ChartRenderer chartData={message.chartData} />}
                 <p className="text-xs opacity-60 mt-1">
                   {message.timestamp.toLocaleTimeString()}
                 </p>
