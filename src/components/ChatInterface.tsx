@@ -54,9 +54,9 @@ export const ChatInterface = ({ pdfText, fileName }: ChatInterfaceProps) => {
     const systemPrompt = `You are a helpful AI assistant that answers questions about PDF documents. 
     
 The user has uploaded a PDF document with the following content:
-${pdfText.substring(0, 8000)}...
+${pdfText.substring(0, 12000)}...
 
-Please answer questions based on this content. Be concise but helpful, and if the answer isn't in the document, let the user know.`;
+Please analyze this content carefully and answer questions based on it. Provide detailed, accurate responses with specific references to the document content when possible. If the answer isn't clearly stated in the document, let the user know and provide your best interpretation based on the available information.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -70,7 +70,7 @@ Please answer questions based on this content. Be concise but helpful, and if th
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question },
         ],
-        max_tokens: 500,
+        max_tokens: 1000,
         temperature: 0.7,
       }),
     });
@@ -92,9 +92,9 @@ Please answer questions based on this content. Be concise but helpful, and if th
     const systemPrompt = `You are a helpful AI assistant that answers questions about PDF documents. 
     
 The user has uploaded a PDF document with the following content:
-${pdfText.substring(0, 8000)}...
+${pdfText.substring(0, 12000)}...
 
-Please answer questions based on this content. Be concise but helpful, and if the answer isn't in the document, let the user know.
+Please analyze this content carefully and answer questions based on it. Provide detailed, accurate responses with specific references to the document content when possible. If the answer isn't clearly stated in the document, let the user know and provide your best interpretation based on the available information.
 
 User question: ${question}`;
 
@@ -111,7 +111,7 @@ User question: ${question}`;
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1000,
         }
       }),
     });
@@ -218,7 +218,7 @@ User question: ${question}`;
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="gemini">Google Gemini (Free)</SelectItem>
-            <SelectItem value="openai">OpenAI GPT-3.5</SelectItem>
+            <SelectItem value="openai">OpenAI GPT-4o</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground mt-2">
